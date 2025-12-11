@@ -1,0 +1,48 @@
+/*
+  This file defines the animated gradient background for the application.
+  The 'animated-gradient' class can be applied to any top-level container (like the one in Layout.jsx)
+  to give the entire page this dynamic, high-tech background.
+*/
+
+/*
+  Step 1: Define the keyframes for the animation.
+  This tells the background how to move over time. It smoothly transitions
+  from left to right and then back again.
+*/
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/*
+  Step 2: Create a reusable class that applies the gradient and animation.
+*/
+.animated-gradient {
+  /*
+    Define a multi-color gradient. The colors are taken from your "Cosmic Dark"
+    and "Aura Gradient" inspiration for a deep, space-like feel.
+  */
+  background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e);
+
+  /*
+    Make the background itself much larger than the viewport. This is what
+    allows the gradient to move across the screen.
+  */
+  background-size: 400% 400%;
+  
+  /*
+    Apply the keyframe animation we defined above.
+    - gradient-animation: the name of our @keyframes rule.
+    - 15s: the duration of one full cycle (slower is smoother).
+    - ease: the timing function.
+    - infinite: loop the animation forever.
+  */
+  animation: gradient-animation 15s ease infinite;
+}
