@@ -1,22 +1,64 @@
 import axios from 'axios';
-const API_URL = 'http://localhost:5000/api/admin';
 
-// Question Functions
-const getQuestions = (page = 1, limit = 10, category = '') => {
-  return axios.get(`${API_URL}/questions?page=${page}&limit=${limit}&category=${encodeURIComponent(category)}`);
+const getQuestions = (page = 1, limit = 50, category = '') =>
+  axios.get('/api/admin/questions', {
+    params: { page, limit, category },
+  });
+
+/** Loads every question in the bank by paging (server caps limit at 50). */
+const fetchFullQuestionBank = async () => {
+  let page = 1;
+  const questions = [];
+  let totalPages = 1;
+  let allCategories = [];
+
+  do {
+    const res = await getQuestions(page, 50, '');
+    questions.push(...res.data.questions);
+    totalPages = res.data.totalPages;
+    if (page === 1) allCategories = res.data.allCategories || [];
+    page += 1;
+  } while (page <= totalPages);
+
+  return { questions, allCategories };
 };
-const createQuestion = (questionData) => axios.post(`${API_URL}/questions`, questionData);
-const updateQuestion = (id, questionData) => axios.put(`${API_URL}/questions/${id}`, questionData);
-const deleteQuestion = (id) => axios.delete(`${API_URL}/questions/${id}`);
 
-// Test Functions
-const getTestById = (id) => axios.get(`${API_URL}/tests/${id}`);
-const createTest = (testData) => axios.post(`${API_URL}/tests`, testData);
-const updateTest = (id, testData) => axios.put(`${API_URL}/tests/${id}`, testData);
-const deleteTest = (id) => axios.delete(`${API_URL}/tests/${id}`);
+const createQuestion = (questionData) => axios.post('/api/admin/questions', questionData);
+
+const updateQuestion = (id, questionData) =>
+  axios.put(`/api/admin/questions/${id}`, questionData);
+
+const deleteQuestion = (id) => axios.delete(`/api/admin/questions/${id}`);
+
+const getTestById = (id) => axios.get(`/api/admin/tests/${id}`);
+
+const createTest = (testData) => axios.post('/api/admin/tests', testData);
+
+const updateTest = (id, testData) => axios.put(`/api/admin/tests/${id}`, testData);
+
+const deleteTest = (id) => axios.delete(`/api/admin/tests/${id}`);
+
+const getAnalytics = () => axios.get('/api/admin/analytics');
+
+const getViolationsForTest = (testId) =>
+  axios.get(`/api/admin/tests/${testId}/violations`);
+
+const exportTestScores = (testId) =>
+  axios.get(`/api/admin/tests/${testId}/export`, { responseType: 'blob' }).then((res) => {
+    const blob = new Blob([res.data], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `test-${testId}-scores.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
 
 const adminService = {
   getQuestions,
+  fetchFullQuestionBank,
   createQuestion,
   updateQuestion,
   deleteQuestion,
@@ -24,6 +66,9 @@ const adminService = {
   createTest,
   updateTest,
   deleteTest,
+  getAnalytics,
+  getViolationsForTest,
+  exportTestScores,
 };
 
 export default adminService;

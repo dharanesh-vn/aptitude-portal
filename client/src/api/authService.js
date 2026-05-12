@@ -1,20 +1,13 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/auth';
-axios.defaults.withCredentials = true;
+const register = (name, email, password) =>
+  axios.post('/api/auth/register', { name, email, password });
 
-const register = (name, email, password) => {
-  return axios.post(`${API_URL}/register`, { name, email, password });
-};
-const login = (email, password) => {
-  return axios.post(`${API_URL}/login`, { email, password });
-};
-const logout = () => {
-  return axios.post(`${API_URL}/logout`);
-};
-const getMe = () => {
-  return axios.get(`${API_URL}/me`);
-};
+const login = (email, password) => axios.post('/api/auth/login', { email, password });
+
+const logout = () => axios.post('/api/auth/logout');
+
+const getMe = () => axios.get('/api/auth/me');
 
 const authService = { register, login, logout, getMe };
 export default authService;

@@ -10,7 +10,19 @@ const AdminDashboard = () => {
         <Text>Use the sections below to manage the application content.</Text>
       </VStack>
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={10} mt={10}>
+      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10} mt={10}>
+        <Card variant="outline">
+          <CardHeader>
+            <Heading size='md'>Analytics</Heading>
+          </CardHeader>
+          <CardBody>
+            <Text>Overview of participation, score distributions, and category performance.</Text>
+            <Button as={Link} to="/admin/analytics" colorScheme="brand" mt={4}>
+              Open analytics
+            </Button>
+          </CardBody>
+        </Card>
+
         {/* Card for Managing Questions */}
         <Card variant="outline">
           <CardHeader>

@@ -18,6 +18,7 @@ import AdminTestsList from './pages/admin/AdminTestsList';
 // THIS IS THE CORRECTED LINE:
 import AdminTestDetail from './pages/admin/AdminTestDetail'; 
 import AdminQuestionsList from './pages/admin/AdminQuestionsList';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
 
 const AppRoutes = () => {
   const { user, loading } = useContext(AuthContext);
@@ -46,6 +47,7 @@ const AppRoutes = () => {
       {/* Protected Admin routes also wrapped in the Layout */}
       <Route path="/admin" element={user?.isAdmin ? <Layout /> : <Navigate to="/dashboard" />}>
         <Route index element={<AdminTestsList />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
         <Route path="tests/:testId" element={<AdminTestDetail />} />
         <Route path="questions" element={<AdminQuestionsList />} />
       </Route>

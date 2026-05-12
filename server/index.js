@@ -3,9 +3,11 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+const morgan = require('morgan');
+
 dotenv.config();
 
-// Route Imports
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/adminRoutes');
 const testRoutes = require('./routes/testRoutes');
@@ -20,24 +22,44 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-connectDB();
+
+const parseOrigins = () => {
+  const raw = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+  const parts = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 1) return parts[0];
+  return parts;
+};
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(express.json());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+app.use(
+  cors({
+    origin: parseOrigins(),
+    credentials: true,
+  })
+);
+
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
-// Define API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api/submissions', submissionRoutes);
 
-// Simple root route to check if API is alive
 app.get('/', (req, res) => {
   res.send('Aptitude App API is running...');
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
+
+if (require.main === module) {
+  connectDB().then(() => {
+    app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+  });
+}
+
+module.exports = app;

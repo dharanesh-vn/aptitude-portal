@@ -12,9 +12,10 @@ const ManageTests = () => {
   const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
-    adminService.getQuestions()
-      .then(res => setAllQuestions(res.data))
-      .catch(() => toast.error("Could not fetch question list."))
+    adminService
+      .fetchFullQuestionBank()
+      .then(({ questions }) => setAllQuestions(questions))
+      .catch(() => toast.error('Could not fetch question list.'))
       .finally(() => setIsFetching(false));
   }, []);
 

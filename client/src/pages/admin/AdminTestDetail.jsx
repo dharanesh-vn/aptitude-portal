@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import {
   Box, Heading, Button, VStack, Text, Spinner, CheckboxGroup, Checkbox, SimpleGrid,
   useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter,
-  Flex, FormControl, FormLabel, Input, Select
+  Flex, FormControl, FormLabel, Input, Select, Table, Thead, Tbody, Tr, Th, Td
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -111,6 +111,7 @@ const AdminTestDetail = () => {
     const [test, setTest] = useState(null);
     const [allQuestions, setAllQuestions] = useState([]);
     const [allCategories, setAllCategories] = useState([]);
+    const [violations, setViolations] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const { isOpen: isManageOpen, onOpen: onManageOpen, onClose: onManageClose } = useDisclosure();
@@ -120,13 +121,15 @@ const AdminTestDetail = () => {
         // We set loading to true at the start of the fetch
         setLoading(true);
         try {
-            const [testRes, questionsRes] = await Promise.all([
+            const [testRes, bankRes] = await Promise.all([
                 adminService.getTestById(testId),
-                adminService.getQuestions(1, 9999) // Fetch all questions for the modal
+                adminService.fetchFullQuestionBank(),
             ]);
+            const violRes = await adminService.getViolationsForTest(testId).catch(() => ({ data: [] }));
             setTest(testRes.data);
-            setAllQuestions(questionsRes.data.questions);
-            setAllCategories(questionsRes.data.allCategories);
+            setAllQuestions(bankRes.questions);
+            setAllCategories(bankRes.allCategories);
+            setViolations(violRes.data || []);
         } catch (error) {
             toast.error("Could not fetch test details.");
             setTest(null);
@@ -165,13 +168,46 @@ const AdminTestDetail = () => {
         <Box>
             <Button as={Link} to="/admin" mb={6}>← Back to All Tests</Button>
             
-            <Flex justify="space-between" align="center" mb={8} direction={{ base: 'column', md: 'row' }} gap={4}>
+            <Flex justify="space-between" align="center" mb={8} direction={{ base: 'column', md: 'row' }} gap={4} wrap="wrap">
                 <Box>
                     <Heading>{test.title}</Heading>
                     <Text color="gray.600">Duration: {test.duration} minutes</Text>
                 </Box>
-                <Button colorScheme="blue" onClick={onEditOpen}>Edit Details</Button>
+                <Flex gap={2} wrap="wrap">
+                    <Button colorScheme="teal" variant="outline" onClick={() => adminService.exportTestScores(testId)}>
+                        Export scores (CSV)
+                    </Button>
+                    <Button colorScheme="blue" onClick={onEditOpen}>Edit Details</Button>
+                </Flex>
             </Flex>
+
+            <Box mb={8} p={4} borderWidth={1} borderRadius="lg" bg="white" overflowX="auto">
+                <Heading size="md" mb={4}>Proctoring violations</Heading>
+                {violations.length === 0 ? (
+                    <Text color="gray.600">No violations recorded for this test.</Text>
+                ) : (
+                    <Table size="sm">
+                        <Thead>
+                            <Tr>
+                                <Th>Time</Th>
+                                <Th>Student</Th>
+                                <Th>Email</Th>
+                                <Th>Type</Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {violations.map((v) => (
+                                <Tr key={v._id}>
+                                    <Td>{new Date(v.timestamp).toLocaleString()}</Td>
+                                    <Td>{v.user?.name}</Td>
+                                    <Td>{v.user?.email}</Td>
+                                    <Td>{v.type}</Td>
+                                </Tr>
+                            ))}
+                        </Tbody>
+                    </Table>
+                )}
+            </Box>
 
             <Box p={6} bg="gray.50" borderRadius="lg">
                 <Flex justify="space-between" align="center">

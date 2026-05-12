@@ -1,38 +1,20 @@
 import axios from 'axios';
 
-// The base URL for all test-related API endpoints
-const API_URL = 'http://localhost:5000/api/tests';
+const getAllTests = () => axios.get('/api/tests');
 
-/**
- * Fetches a list of all available tests from the server.
- */
-const getAllTests = () => {
-  return axios.get(API_URL);
-};
+const startTest = (testId) => axios.get(`/api/tests/${testId}/start`);
 
-/**
- * Fetches the specific data for a single test to begin the quiz.
- * @param {string} testId The ID of the test to start.
- */
-const startTest = (testId) => {
-  // Correctly constructs the URL, e.g., http://localhost:5000/api/tests/SOME_ID/start
-  return axios.get(`${API_URL}/${testId}/start`);
-};
+const submitTest = (testId, payload) =>
+  axios.post(`/api/tests/${testId}/submit`, payload);
 
-/**
- * Submits the user's answers to the server for grading.
- * @param {string} testId The ID of the test being submitted.
- * @param {object} answers The user's answers in the format { questionId: "userAnswer", ... }.
- */
-const submitTest = (testId, answers) => {
-  return axios.post(`${API_URL}/${testId}/submit`, { answers });
-};
-
+const logViolation = (testId, body) =>
+  axios.post(`/api/tests/${testId}/violations`, body);
 
 const testService = {
   getAllTests,
   startTest,
   submitTest,
+  logViolation,
 };
 
 export default testService;

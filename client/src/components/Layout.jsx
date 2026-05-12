@@ -17,9 +17,14 @@ const Layout = () => {
             My Profile
         </Button>
         {user?.isAdmin && (
-            <Button as={Link} to="/admin" variant="ghost" mr={4} _hover={{ bg: 'brand.600' }}>
-                Admin Panel
+          <>
+            <Button as={Link} to="/admin/analytics" variant="ghost" mr={2} _hover={{ bg: 'brand.600' }}>
+              Analytics
             </Button>
+            <Button as={Link} to="/admin" variant="ghost" mr={4} _hover={{ bg: 'brand.600' }}>
+              Admin Panel
+            </Button>
+          </>
         )}
         {user && (
           <Button bg="accent.500" color="gray.800" _hover={{ bg: 'accent.600' }} onClick={logout}>

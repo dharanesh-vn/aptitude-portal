@@ -1,14 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import axios from 'axios';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppWrapper from './App';
 
-// Define the final, polished Royal Blue theme
+const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+axios.defaults.baseURL = apiBase;
+axios.defaults.withCredentials = true;
+
 const theme = extendTheme({
   colors: {
-    brand: { // Royal Blue
+    brand: {
       50: '#e6f0ff',
       100: '#b8d4fe',
       200: '#8aaeff',
@@ -20,7 +24,7 @@ const theme = extendTheme({
       800: '#001e44',
       900: '#000f22',
     },
-    accent: { // Gold/Amber
+    accent: {
       50: '#fffbeb',
       100: '#fef3c7',
       200: '#fde68a',
@@ -32,12 +36,10 @@ const theme = extendTheme({
       800: '#92400e',
       900: '#78350f',
     },
-    // --- THIS IS THE CRITICAL CHANGE ---
-    // A new, more distinct background color palette
     ui: {
-      background: '#EDF2F7', // A soft, cool slate gray (like Chakra's gray.100)
-      card: '#FFFFFF',       // Cards will remain pure white for contrast
-    }
+      background: '#EDF2F7',
+      card: '#FFFFFF',
+    },
   },
   fonts: {
     heading: `Georgia, "Times New Roman", serif`,
@@ -46,7 +48,7 @@ const theme = extendTheme({
   styles: {
     global: {
       body: {
-        bg: 'ui.background', // Set the new background color globally
+        bg: 'ui.background',
         color: 'gray.800',
       },
     },
@@ -55,9 +57,9 @@ const theme = extendTheme({
     Card: {
       baseStyle: {
         container: {
-            backgroundColor: 'ui.card' // Ensure cards use the defined white
-        }
-      }
+          backgroundColor: 'ui.card',
+        },
+      },
     },
     Button: {
       baseStyle: {
@@ -69,8 +71,8 @@ const theme = extendTheme({
       baseStyle: {
         fontFamily: 'heading',
         color: 'gray.700',
-        fontWeight: '600'
-      }
+        fontWeight: '600',
+      },
     },
   },
 });
