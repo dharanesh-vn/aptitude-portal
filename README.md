@@ -5,7 +5,6 @@
 [![Express.js](https://img.shields.io/badge/Backend-Express.js-000000?style=flat&logo=express)](https://expressjs.com)
 [![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=flat&logo=react)](https://reactjs.org)
 [![Node.js](https://img.shields.io/badge/Runtime-Node.js-339933?style=flat&logo=node.js)](https://nodejs.org)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
 A comprehensive, professional-grade aptitude testing platform designed for institutional use. This portal enables administrators to manage a vast repository of questions, create timed tests, and analyze student performance through a data-rich dashboard. For students, it provides a seamless, proctored environment to take assessments, track their progress, and review detailed results. Built with the MERN stack and styled with Chakra UI, the system prioritizes security, scalability, and a premium user experience.
 
@@ -224,19 +223,6 @@ npm run dev
 
 ---
 
-##  Screenshots
-*(Replace these placeholders with actual images once deployed)*
-
-| Login Page | Student Dashboard |
-|---|---|
-| ![Login Placeholder](https://via.placeholder.com/400x250?text=Login+Page) | ![Dashboard Placeholder](https://via.placeholder.com/400x250?text=Student+Dashboard) |
-
-| Assessment Interface | Admin Analytics |
-|---|---|
-| ![Test Placeholder](https://via.placeholder.com/400x250?text=Assessment+UI) | ![Analytics Placeholder](https://via.placeholder.com/400x250?text=Admin+Analytics) |
-
----
-
 ##  How Proctoring Works
 
 1. **System Check**: Before starting, the app requests Fullscreen mode.
@@ -267,8 +253,4 @@ npm run dev
 
 ---
 
-##  License
-Distributed under the **ISC License**. See `LICENSE` for more information.
-
----
 *Built with ❤️ for CIT students.*
