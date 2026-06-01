@@ -79,9 +79,18 @@ const ReviewPage = () => {
                  <Button as={Link} to="/profile">← Back to My History</Button>
             </Flex>
             <VStack spacing={8} align="stretch">
-                {submission.test.questions.map((q, index) => (
-                    <QuestionReview key={q._id} question={q} userAnswer={submission.answers[q._id]} index={index} />
-                ))}
+                {submission.test.questions.map((q, index) => {
+                    const qid = q._id?.toString?.() ?? String(q._id);
+                    const userAnswer = submission.answers?.[qid] ?? submission.answers?.[q._id];
+                    return (
+                        <QuestionReview
+                            key={qid}
+                            question={q}
+                            userAnswer={userAnswer}
+                            index={index}
+                        />
+                    );
+                })}
             </VStack>
         </Box>
     );

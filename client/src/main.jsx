@@ -4,9 +4,12 @@ import axios from 'axios';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './index.css';
 import AppWrapper from './App';
 
-const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Default: same-origin (Vite dev proxy in development, Express static in production).
+// Set VITE_API_URL only when the API runs on a different host (e.g. separate deploy).
+const apiBase = import.meta.env.VITE_API_URL ?? '';
 axios.defaults.baseURL = apiBase;
 axios.defaults.withCredentials = true;
 
@@ -54,6 +57,18 @@ const theme = extendTheme({
     },
   },
   components: {
+    Box: {
+      variants: {
+        glass: {
+          bg: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: 'xl',
+          border: '1px solid',
+          borderColor: 'whiteAlpha.200',
+          boxShadow: 'xl',
+        },
+      },
+    },
     Card: {
       baseStyle: {
         container: {
@@ -65,6 +80,14 @@ const theme = extendTheme({
       baseStyle: {
         fontWeight: '600',
         borderRadius: 'lg',
+      },
+      variants: {
+        'solid-light': {
+          bg: 'white',
+          color: 'brand.700',
+          _hover: { bg: 'gray.100' },
+          _active: { bg: 'gray.200' },
+        },
       },
     },
     Heading: {

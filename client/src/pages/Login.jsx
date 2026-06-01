@@ -27,14 +27,14 @@ const Login = () => {
     };
 
     return (
-        <Flex minH={'calc(100vh - 80px)'} align="center" justify="center">
+        <Flex className="animated-gradient" minH="100vh" align="center" justify="center" px={4}>
             <Box variant="glass" as="form" onSubmit={handleSubmit} p={12} width="full" maxW="md">
                 <VStack spacing={6}>
                     <Heading size="xl" color="white" mb={4}>Sign In</Heading>
                     
                     <FormControl isRequired>
                         <FormLabel>Email</FormLabel>
-                        <Input size="lg" type="email" name="email" placeholder="your.id@cit.edu.in" onChange={handleChange} />
+                        <Input size="lg" type="email" name="email" placeholder="email@example.com" onChange={handleChange} />
                     </FormControl>
                     
                     <FormControl isRequired>

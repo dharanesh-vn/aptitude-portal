@@ -12,12 +12,6 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Please add an email'],
       unique: true,
       trim: true,
-      validate: {
-        validator: function (value) {
-          return value.endsWith('@cit.edu.in');
-        },
-        message: 'Access Denied: Only @cit.edu.in emails are allowed.',
-      },
     },
     password: {
       type: String,

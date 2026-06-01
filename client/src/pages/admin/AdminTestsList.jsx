@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Heading, Button, VStack, Text, Spinner, Flex, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, FormControl, FormLabel, Input, AlertDialog, AlertDialogBody, AlertDialogHeader, AlertDialogContent, AlertDialogFooter, AlertDialogOverlay } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import adminService from '../../api/adminService';
 import testService from '../../api/testService';
 
 // Reusable modal for creating a new test
-const CreateTestModal = ({ isOpen, onClose, onTestCreated }) => {
+const CreateTestModal = ({ isOpen, onClose, onTestCreated, onCreated }) => {
     const [title, setTitle] = useState('');
     const [duration, setDuration] = useState(30);
     const [isLoading, setIsLoading] = useState(false);
@@ -18,12 +18,19 @@ const CreateTestModal = ({ isOpen, onClose, onTestCreated }) => {
         }
         setIsLoading(true);
         try {
-            await adminService.createTest({ title, duration, questionIds: [] });
-            toast.success(`Test "${title}" created successfully!`);
-            onTestCreated(); // This is a function passed as a prop to refresh the list
+            const res = await adminService.createTest({ title, duration, questionIds: [] });
+            toast.success(`Test "${title}" created. Add questions on the next screen.`);
+            onTestCreated();
             onClose();
+            if (onCreated && res.data?._id) {
+                onCreated(res.data._id);
+            }
         } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to create test.");
+            const msg =
+                error.response?.data?.message ||
+                error.response?.data?.errors?.[0]?.msg ||
+                'Failed to create test.';
+            toast.error(msg);
         } finally {
             setIsLoading(false);
         }
@@ -58,6 +65,7 @@ const CreateTestModal = ({ isOpen, onClose, onTestCreated }) => {
 
 // Main page component for listing tests
 const AdminTestsList = () => {
+    const navigate = useNavigate();
     const [tests, setTests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [testToDelete, setTestToDelete] = useState(null);
@@ -124,7 +132,12 @@ const AdminTestsList = () => {
                     )) : <Text p={4} bg="gray.50" borderRadius="md">No tests found. Create one to get started.</Text>}
                 </VStack>
             )}
-            <CreateTestModal isOpen={isCreateOpen} onClose={onCreateClose} onTestCreated={fetchTests} />
+            <CreateTestModal
+                isOpen={isCreateOpen}
+                onClose={onCreateClose}
+                onTestCreated={fetchTests}
+                onCreated={(id) => navigate(`/admin/tests/${id}`)}
+            />
             
             <AlertDialog isOpen={isDeleteOpen} leastDestructiveRef={cancelRef} onClose={onDeleteClose} isCentered>
                 <AlertDialogOverlay>

@@ -28,15 +28,15 @@ const listQuestionsRules = [
 const createTestRules = [
   body('title').trim().notEmpty().withMessage('Title is required'),
   body('duration').isNumeric().withMessage('Duration must be a number').toFloat(),
-  body('questionIds').isArray({ min: 1 }).withMessage('At least one question is required'),
-  body('questionIds.*').isMongoId(),
+  body('questionIds').optional().isArray().withMessage('questionIds must be an array'),
+  body('questionIds.*').optional().isMongoId(),
 ];
 
 const updateTestRules = [
   param('id').isMongoId().withMessage('Invalid test id'),
   body('title').optional().trim().notEmpty(),
   body('duration').optional().isNumeric().toFloat(),
-  body('questionIds').optional().isArray({ min: 1 }),
+  body('questionIds').optional().isArray(),
   body('questionIds.*').optional().isMongoId(),
 ];
 

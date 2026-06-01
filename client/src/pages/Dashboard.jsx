@@ -37,20 +37,22 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const TestCard = ({ test, onStart }) => (
-  <Box variant="glass" p={6} width="full">
-    <VStack align="stretch" spacing={4}>
-      <Heading size="md" color="white">
-        {test.title}
-      </Heading>
-      <Text color="gray.300">Duration: {test.duration} minutes</Text>
-      <Text fontWeight="bold" color="orange.200">
-        Proctored: repeated tab or fullscreen violations may auto-submit after warnings.
-      </Text>
-      <Button variant="solid-light" onClick={() => onStart(test)} size="lg" mt={2}>
-        Start Test
-      </Button>
-    </VStack>
-  </Box>
+  <Card variant="outline" shadow="md">
+    <CardBody>
+      <VStack align="stretch" spacing={4}>
+        <Heading size="md" color="brand.700">
+          {test.title}
+        </Heading>
+        <Text color="gray.600">Duration: {test.duration} minutes</Text>
+        <Text fontWeight="semibold" color="orange.600" fontSize="sm">
+          Proctored: repeated tab or fullscreen violations may auto-submit after warnings.
+        </Text>
+        <Button colorScheme="brand" onClick={() => onStart(test)} size="lg" mt={2}>
+          Start Test
+        </Button>
+      </VStack>
+    </CardBody>
+  </Card>
 );
 
 const Dashboard = () => {
@@ -81,8 +83,11 @@ const Dashboard = () => {
     };
   }, []);
 
-  const takenTestIds = new Set(submissions.map((s) => s.test?._id || s.test).filter(Boolean));
-  const availableToStart = tests.filter((t) => !takenTestIds.has(t._id));
+  const toId = (v) => (v?._id ?? v)?.toString?.() ?? '';
+  const takenTestIds = new Set(
+    submissions.map((s) => toId(s.test)).filter(Boolean)
+  );
+  const availableToStart = tests.filter((t) => !takenTestIds.has(toId(t._id)));
 
   const chartRows = [...submissions]
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
@@ -113,13 +118,13 @@ const Dashboard = () => {
   return (
     <>
       <VStack spacing={8} align="stretch" p={{ base: 4, md: 8 }}>
-        <Heading as="h1" size="xl" color="white">
+        <Heading as="h1" size="xl" color="brand.700">
           Welcome, {user?.name}
         </Heading>
 
         {loading ? (
           <Flex justify="center" align="center" h="40vh">
-            <Spinner size="xl" color="white" />
+            <Spinner size="xl" color="brand.500" />
           </Flex>
         ) : (
           <>
@@ -154,11 +159,12 @@ const Dashboard = () => {
             </SimpleGrid>
 
             {chartRows.length > 0 && (
-              <Box variant="glass" p={6} borderRadius="lg">
-                <Heading size="md" color="white" mb={4}>
+              <Card shadow="md">
+                <CardBody>
+                <Heading size="md" color="brand.700" mb={4}>
                   Score history
                 </Heading>
-                <Box h="280px" color="black">
+                <Box h="280px">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartRows} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -174,10 +180,11 @@ const Dashboard = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 </Box>
-              </Box>
+                </CardBody>
+              </Card>
             )}
 
-            <Heading size="md" color="white">
+            <Heading size="md" color="brand.700">
               Available tests
             </Heading>
             {availableToStart.length > 0 ? (
@@ -187,16 +194,16 @@ const Dashboard = () => {
                 ))}
               </VStack>
             ) : (
-              <Box variant="glass" p={10} textAlign="center">
-                <Heading size="md" color="white">
+              <Card p={10} textAlign="center" variant="outline">
+                <Heading size="md" color="gray.700">
                   {tests.length === 0
                     ? 'No tests are available right now.'
                     : 'You have started or completed all available tests.'}
                 </Heading>
-                <Text mt={2} color="gray.300">
-                  Visit your history in submissions or check back when admins publish new assessments.
+                <Text mt={2} color="gray.600">
+                  Visit your profile for past results or check back when admins publish new assessments.
                 </Text>
-              </Box>
+              </Card>
             )}
           </>
         )}
@@ -214,7 +221,7 @@ const Dashboard = () => {
             <Button ref={cancelRef} onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="solid-light" onClick={handleConfirmStart} ml={3}>
+            <Button colorScheme="brand" onClick={handleConfirmStart} ml={3}>
               Proceed
             </Button>
           </AlertDialogFooter>

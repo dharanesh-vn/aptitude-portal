@@ -15,8 +15,7 @@ import Profile from './pages/Profile';
 import ReviewPage from './pages/ReviewPage';
 // Admin Pages
 import AdminTestsList from './pages/admin/AdminTestsList';
-// THIS IS THE CORRECTED LINE:
-import AdminTestDetail from './pages/admin/AdminTestDetail'; 
+import AdminTestDetail from './pages/admin/AdminTestDetail';
 import AdminQuestionsList from './pages/admin/AdminQuestionsList';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 

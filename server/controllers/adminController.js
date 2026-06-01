@@ -109,7 +109,7 @@ const deleteQuestion = async (req, res) => {
 
 // --- Test Management ---
 const createTest = async (req, res) => {
-  const { title, duration, questionIds } = req.body;
+  const { title, duration, questionIds = [] } = req.body;
   try {
     const test = new Test({ title, duration, questions: questionIds });
     const createdTest = await test.save();

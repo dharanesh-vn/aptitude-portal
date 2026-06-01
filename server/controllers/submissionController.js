@@ -21,12 +21,17 @@ const getSubmissionReview = async (req, res) => {
       return res.status(404).json({ message: 'Associated test not found' });
     }
 
+    const answers =
+      submission.answers instanceof Map
+        ? Object.fromEntries(submission.answers)
+        : submission.answers;
+
     const reviewData = {
       _id: submission._id,
       user: submission.user,
       score: submission.score,
       total: submission.total,
-      answers: submission.answers,
+      answers,
       createdAt: submission.createdAt,
       test: testDetails,
     };

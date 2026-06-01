@@ -42,5 +42,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Production build folder (from the 'client' directory)
+# Production build output (Vite)
+/client/dist/
 /client/build/
+
+# Test coverage
+/server/coverage/
