@@ -40,6 +40,15 @@ const deleteTest = (id) => axios.delete(`/api/admin/tests/${id}`);
 
 const getAnalytics = () => axios.get('/api/admin/analytics');
 
+const getTestResults = (testId) => axios.get(`/api/admin/tests/${testId}/results`);
+
+const getUsers = () => axios.get('/api/admin/users');
+
+const getAllSubmissions = () => axios.get('/api/admin/submissions');
+
+const setUserAdmin = (userId, isAdmin) =>
+  axios.patch(`/api/admin/users/${userId}/admin`, { isAdmin });
+
 const getViolationsForTest = (testId) =>
   axios.get(`/api/admin/tests/${testId}/violations`);
 
@@ -67,6 +76,10 @@ const adminService = {
   updateTest,
   deleteTest,
   getAnalytics,
+  getTestResults,
+  getUsers,
+  getAllSubmissions,
+  setUserAdmin,
   getViolationsForTest,
   exportTestScores,
 };

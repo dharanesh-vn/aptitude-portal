@@ -7,40 +7,70 @@
 [![Node.js](https://img.shields.io/badge/Runtime-Node.js-339933?style=flat&logo=node.js)](https://nodejs.org)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-A full-stack aptitude testing platform for institutional use. Administrators manage a question bank, assemble timed tests, review analytics, export scores, and inspect proctoring logs. Students register, take proctored assessments with server-enforced timers, view results, review answers, and download PDF reports. Built with the MERN stack, Chakra UI, and JWT sessions stored in HTTP-only cookies.
+A full-stack aptitude testing platform for institutional use. **Students** register, take proctored timed tests, and review results. **Administrators** manage the question bank, publish tests, view analytics, inspect test-wise submissions, export CSVs, and promote other users to admin.
+
+Built with the MERN stack, Chakra UI, JWT sessions in HTTP-only cookies, and role-based access on both frontend and backend.
 
 ---
 
-## Key Features
+## Key features
 
 ### Student
 
-- **Authentication** — Register and sign in with JWT stored in an HTTP-only cookie (`withCredentials` on the client).
-- **Dashboard** — Lists available tests, submission history, and a simple performance trend chart.
-- **Proctored tests** — Fullscreen on start; tab-switch and fullscreen-exit events are logged; the **3rd violation** auto-submits the attempt.
-- **Server timer** — Attempt expiry is enforced on the server; the client syncs from `expiresAt` and auto-submits when time runs out.
-- **One submission per test** — Enforced by a unique index on `(user, test)` and attempt lifecycle checks.
-- **Results & review** — Score summary plus question-by-question review with correct answers and explanations.
-- **PDF report** — Download a per-submission report via PDFKit on the backend.
+| Feature | Description |
+|---------|-------------|
+| **Registration** | Split-screen signup with validation, password strength meter, and proctoring terms checkbox |
+| **Login** | Professional sign-in with inline validation and show/hide password |
+| **Dashboard** | Available tests, stats, score history chart |
+| **Proctored tests** | Fullscreen; tab/fullscreen violations logged; 3rd violation auto-submits |
+| **Server timer** | `expiresAt` enforced on the server; client syncs and auto-submits |
+| **One submission per test** | Unique index on `(user, test)` |
+| **Results & review** | Score summary, per-question review with explanations |
+| **PDF report** | Download via PDFKit (`GET /api/submissions/:id/report`) |
 
-### Admin
+### Super admin & administrators
 
-- **Question bank** — Paginated CRUD with category filter (max 50 questions per page on the API).
-- **Tests** — Create, update, delete tests; attach questions from the bank; view test detail.
-- **Analytics** — Score distribution buckets, per-test averages, monthly trends, category accuracy.
-- **Proctoring logs** — Violations per test (`tab_switch`, `fullscreen_exit`).
-- **CSV export** — Download all scores for a test.
-
-> **Note:** There is no dedicated “user management” UI or API. Student accounts self-register; promote admins by setting `isAdmin: true` on a user document in MongoDB.
+| Feature | Description |
+|---------|-------------|
+| **Admin console** | Dedicated sidebar layout; dashboard is the default `/admin` home |
+| **Question bank** | Paginated CRUD with category filter |
+| **Tests** | Create, edit, delete; assign questions; quick create or full wizard |
+| **Analytics** | Score buckets, monthly trends, per-test averages, category accuracy |
+| **Test-wise results** | Per-test submission table, summary stats, CSV export |
+| **Users & roles** | List all users, all submissions, toggle `isAdmin` for any account |
+| **Proctoring logs** | Violations per test on test detail |
+| **CSV export** | All scores for a test |
 
 ### Security & integrity
 
-- JWT in HTTP-only cookies (`sameSite: strict`, `secure` in production).
-- `express-validator` on inputs; structured `400` responses via `validateRequest` middleware.
-- Login rate limit: **50 requests / 15 minutes** per IP on `POST /api/auth/login`.
-- `helmet`, `cors` (configurable origins), `morgan` logging.
-- Questions shuffled per attempt; `correctAnswer` is never sent to the client during a test.
-- Scoring and deadline checks run on the server (`SUBMIT_GRACE_MS` = **30 seconds** after `expiresAt`).
+- JWT in HTTP-only cookies (`sameSite: strict`, `secure` in production)
+- `express-validator` on inputs; students cannot self-register as admin
+- Login rate limit: **50 requests / 15 minutes** per IP
+- Primary super admin cannot be demoted via API
+- Questions shuffled per attempt; `correctAnswer` never sent during a test
+- Server-side scoring and deadline checks (`SUBMIT_GRACE_MS` = 30 seconds)
+
+---
+
+## Default super admin credentials
+
+After a database reset (see below), sign in with:
+
+| Field | Value |
+|-------|--------|
+| **Name** | Admin |
+| **Email** | `admin@aptitude.com` |
+| **Password** | `Admin@123` |
+
+Override via `server/.env`:
+
+```env
+SUPER_ADMIN_EMAIL=admin@aptitude.com
+SUPER_ADMIN_PASSWORD=Admin@123
+SUPER_ADMIN_NAME=Admin
+```
+
+On server start, the super admin is created if missing. In **development**, the password is kept in sync with env defaults. Use `npm run reset:db` for a **clean database** (deletes all users, tests, questions, submissions, attempts, and violations, then creates only the super admin).
 
 ---
 
@@ -48,91 +78,38 @@ A full-stack aptitude testing platform for institutional use. Administrators man
 
 ```
 aptitude-app-cit/
-├── .env.example          # Template for server + client env vars
-├── .gitignore
+├── .env.example
 ├── README.md
-├── client/               # React 18 + Vite frontend
-│   ├── index.html
-│   ├── package.json
-│   ├── public/
-│   │   └── manifest.json
-│   ├── vite.config.js
+├── client/
 │   └── src/
-│       ├── main.jsx              # Chakra theme, axios base URL, ToastContainer
-│       ├── App.jsx               # Routes + auth guards (inline, no separate ProtectedRoute)
+│       ├── main.jsx
+│       ├── theme.js
+│       ├── App.jsx
 │       ├── api/
-│       │   ├── authService.js
-│       │   ├── testService.js
-│       │   ├── adminService.js
-│       │   └── submissionService.js
 │       ├── components/
-│       │   ├── Layout.jsx        # Nav bar + outlet (replaces a separate Navbar)
-│       │   └── LoadingSpinner.jsx
-│       ├── context/
-│       │   └── AuthContext.jsx
+│       │   ├── AuthLayout.jsx      # Login / register split layout
+│       │   ├── AdminLayout.jsx     # Admin sidebar console
+│       │   └── Layout.jsx          # Student nav
+│       ├── context/AuthContext.jsx
 │       └── pages/
-│           ├── LandingPage.jsx
-│           ├── Login.jsx
-│           ├── Register.jsx      # Password strength UI + confirm password
-│           ├── Dashboard.jsx
-│           ├── Profile.jsx
-│           ├── Test.jsx          # Proctoring + timer
-│           ├── Results.jsx
-│           ├── ReviewPage.jsx
+│           ├── Login.jsx, Register.jsx, LandingPage.jsx
+│           ├── Dashboard.jsx, Test.jsx, Results.jsx, …
 │           └── admin/
-│               ├── AdminTestsList.jsx    # Default /admin — test list + create modal
-│               ├── AdminTestDetail.jsx   # Edit test + assign questions
-│               ├── AdminQuestionsList.jsx
-│               └── AdminAnalytics.jsx
-│               # Unused (not routed): AdminDashboard.jsx, ManageTests.jsx
-└── server/               # Express API
-    ├── index.js          # App entry, MongoDB connect, middleware, route mounting
-    ├── package.json
-    ├── config/
-    │   └── constants.js  # SUBMIT_GRACE_MS
-    ├── controllers/
-    │   ├── authController.js
-    │   ├── adminController.js
-    │   ├── testController.js
-    │   └── submissionController.js
-    ├── middleware/
-    │   ├── authMiddleware.js   # protect, admin
-    │   └── validateRequest.js
-    ├── models/
-    │   ├── User.js
-    │   ├── Question.js
-    │   ├── Test.js
-    │   ├── Attempt.js
-    │   ├── Submission.js
-    │   └── Violation.js
-    ├── routes/
-    │   ├── auth.js
-    │   ├── adminRoutes.js
-    │   ├── testRoutes.js
-    │   └── submissionRoutes.js
-    ├── validators/
-    │   ├── authValidators.js
-    │   ├── adminValidators.js
-    │   ├── testValidators.js
-    │   └── submissionValidators.js
-    └── tests/
-        ├── setup.js              # In-memory MongoDB for Jest
-        └── integration.test.js
+│               ├── AdminDashboard.jsx   # Default /admin
+│               ├── AdminAnalytics.jsx
+│               ├── AdminTestResults.jsx   # Test-wise results
+│               ├── AdminUsers.jsx
+│               ├── AdminTestsList.jsx, AdminTestDetail.jsx
+│               ├── AdminQuestionsList.jsx, ManageTests.jsx
+└── server/
+    ├── index.js
+    ├── config/superAdmin.js
+    ├── scripts/
+    │   ├── resetDatabase.js      # Wipe DB + create super admin
+    │   ├── ensureSuperAdmin.js
+    │   └── seedSuperAdmin.js
+    ├── controllers/, models/, routes/, validators/, tests/
 ```
-
----
-
-## Tech stack
-
-| Layer | Technology |
-|--------|------------|
-| **Frontend** | React 18, Vite 5, Chakra UI 2, Framer Motion, Lucide React, Recharts, React Router 6, Axios, React Hook Form, React Toastify |
-| **Backend** | Node.js, Express 4, Mongoose 8 |
-| **Database** | MongoDB |
-| **Auth** | `jsonwebtoken`, `bcryptjs`, cookie-based sessions |
-| **Reports / export** | PDFKit, json2csv |
-| **Security** | Helmet, CORS, express-rate-limit, express-validator |
-| **Testing** | Jest, Supertest, mongodb-memory-server |
 
 ---
 
@@ -140,73 +117,84 @@ aptitude-app-cit/
 
 | Path | Access | Page |
 |------|--------|------|
-| `/` | Public (redirects if logged in) | Landing |
-| `/login`, `/register` | Public | Auth |
+| `/` | Public | Landing (redirects: admin → `/admin`, student → `/dashboard`) |
+| `/login`, `/register` | Public | Auth (split layout) |
 | `/dashboard` | Student | Dashboard |
-| `/profile` | Student | Profile |
-| `/test/:testId` | Student | Proctored test UI |
+| `/profile` | Student | Test history |
+| `/test/:testId` | Student | Proctored test |
 | `/results/:submissionId` | Student | Results |
 | `/review/:submissionId` | Student | Answer review |
-| `/admin` | Admin | Test list |
+| `/admin` | Admin | **Dashboard (default admin home)** |
 | `/admin/analytics` | Admin | Analytics |
-| `/admin/tests/:testId` | Admin | Test detail / question assignment |
+| `/admin/results` | Admin | Pick a test for results |
+| `/admin/results/:testId` | Admin | Test-wise submissions |
+| `/admin/tests` | Admin | Test list |
+| `/admin/tests/create` | Admin | Create test with questions |
+| `/admin/tests/:testId` | Admin | Test detail |
 | `/admin/questions` | Admin | Question bank |
+| `/admin/users` | Admin | Users, roles, all submissions |
 
-Route protection is implemented in `App.jsx` using `AuthContext` and nested `<Layout />` routes.
+Admins are redirected to `/admin` after login. Students use the top navigation layout; admins use the **Admin Console** sidebar.
 
 ---
 
 ## API reference
 
-Base URL: `http://localhost:5000` (or `VITE_API_URL` on the client). All protected routes expect the `token` HTTP-only cookie set at login/register.
+Base URL: `http://localhost:5000` (dev) or same origin in production. Protected routes use the `token` HTTP-only cookie.
 
 ### Auth — `/api/auth`
 
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
-| POST | `/register` | Public | Register (`name`, `email`, `password` min 8 chars) |
+| POST | `/register` | Public | Register student (`isAdmin` always `false`) |
 | POST | `/login` | Public | Login (rate-limited) |
-| POST | `/logout` | Public | Clear session cookie |
-| GET | `/me` | User | Current user (`_id`, `name`, `email`, `isAdmin`) |
+| POST | `/logout` | Public | Clear cookie |
+| GET | `/me` | User | Current user |
 
 ### Tests — `/api/tests`
 
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
-| GET | `/` | User | List tests (`title`, `duration`) |
-| GET | `/:id/start` | User | Start or resume attempt; returns questions (no correct answers), `attemptId`, `expiresAt`, `serverTime` |
-| POST | `/:id/submit` | User | Body: `{ attemptId, answers: { [questionId]: option } }` |
-| POST | `/:id/violations` | User | Body: `{ attemptId, type: 'tab_switch' \| 'fullscreen_exit' }` |
+| GET | `/` | User | List tests |
+| GET | `/:id/start` | User | Start/resume attempt |
+| POST | `/:id/submit` | User | Submit answers |
+| POST | `/:id/violations` | User | Log proctoring event |
 
 ### Submissions — `/api/submissions`
 
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
-| GET | `/my-history` | User | All submissions for the current user |
-| GET | `/:id/review` | User | Full review payload (own submission only) |
-| GET | `/:id/report` | User | PDF download (own submission only) |
+| GET | `/my-history` | User | Own submissions |
+| GET | `/:id/review` | User | Review (own only) |
+| GET | `/:id/report` | User | PDF (own only) |
 
 ### Admin — `/api/admin`
 
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| GET | `/questions` | Admin | Paginated list (`page`, `limit` ≤ 50, `category`) |
-| POST | `/questions` | Admin | Create question |
-| PUT | `/questions/:id` | Admin | Update question |
-| DELETE | `/questions/:id` | Admin | Delete question (removed from all tests) |
-| POST | `/tests` | Admin | Create test (`title`, `duration`, `questionIds[]` min 1) |
-| GET | `/tests/:id` | Admin | Test with populated questions |
-| PUT | `/tests/:id` | Admin | Update test |
-| DELETE | `/tests/:id` | Admin | Delete test |
-| GET | `/analytics` | Admin | Dashboard metrics |
-| GET | `/tests/:testId/violations` | Admin | Violation log for a test |
-| GET | `/tests/:id/export` | Admin | CSV attachment of scores |
+All routes require `protect` + `admin` middleware.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/users` | All users (no passwords) |
+| PATCH | `/users/:id/admin` | Body: `{ isAdmin: boolean }` — grant/revoke admin |
+| GET | `/submissions` | All submissions (populated) |
+| GET | `/questions` | Paginated question bank |
+| POST | `/questions` | Create question |
+| PUT | `/questions/:id` | Update question |
+| DELETE | `/questions/:id` | Delete question |
+| POST | `/tests` | Create test |
+| GET | `/tests/:id` | Test + questions |
+| PUT | `/tests/:id` | Update test |
+| DELETE | `/tests/:id` | Delete test |
+| GET | `/tests/:id/results` | **Test-wise JSON results** + summary |
+| GET | `/tests/:id/export` | CSV scores |
+| GET | `/tests/:testId/violations` | Violation log |
+| GET | `/analytics` | Dashboard metrics |
 
 ### Health
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| GET | `/` | `Aptitude App API is running...` |
+| GET | `/api/health` | API + DB status |
 
 ---
 
@@ -217,56 +205,13 @@ Base URL: `http://localhost:5000` (or `VITE_API_URL` on the client). All protect
 | Field | Type | Notes |
 |-------|------|-------|
 | `name` | String | Required |
-| `email` | String | Required, unique, trimmed |
-| `password` | String | Required, bcrypt-hashed on save |
-| `isAdmin` | Boolean | Default `false` |
-| `createdAt`, `updatedAt` | Date | Timestamps |
+| `email` | String | Required, unique |
+| `password` | String | bcrypt-hashed |
+| `isAdmin` | Boolean | Default `false`; only admins can change others |
 
-### Question
+### Question, Test, Attempt, Submission, Violation
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `text` | String | Required |
-| `options` | String[] | Required |
-| `correctAnswer` | String | Required |
-| `explanation` | String | Default: `"No explanation provided."` |
-| `category` | String | Required, trimmed |
-| `createdBy`, `updatedBy` | ObjectId → User | Optional audit |
-
-### Test
-
-| Field | Type | Notes |
-|-------|------|-------|
-| `title` | String | Required, unique |
-| `duration` | Number | Minutes |
-| `questions` | ObjectId[] → Question | |
-| `updatedBy` | ObjectId → User | Optional |
-
-### Attempt
-
-| Field | Type | Notes |
-|-------|------|-------|
-| `user`, `test` | ObjectId | Required |
-| `startedAt`, `expiresAt` | Date | Required |
-| `questions` | ObjectId[] | Shuffled order for this attempt |
-| `status` | String | `active` \| `submitted` \| `expired` |
-
-### Submission
-
-| Field | Type | Notes |
-|-------|------|-------|
-| `user`, `test` | ObjectId | Unique together |
-| `attempt` | ObjectId | Optional ref |
-| `score`, `total` | Number | Required |
-| `answers` | Map\<questionId, selectedOption\> | Required |
-
-### Violation
-
-| Field | Type | Notes |
-|-------|------|-------|
-| `user`, `test`, `attempt` | ObjectId | Required |
-| `type` | String | `tab_switch` \| `fullscreen_exit` |
-| `timestamp` | Date | Default now |
+See earlier sections in this repo’s history or `server/models/` for full schemas.
 
 ---
 
@@ -274,169 +219,135 @@ Base URL: `http://localhost:5000` (or `VITE_API_URL` on the client). All protect
 
 ### Prerequisites
 
-- **Node.js** 18+ recommended (16+ minimum)
-- **MongoDB** (local or Atlas)
-- **npm**
+- Node.js 18+
+- MongoDB (local or Atlas)
+- npm
 
-### 1. Clone
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/your-org/aptitude-app-cit.git
 cd aptitude-app-cit
+cd server && npm install
+cd ../client && npm install
 ```
 
-### 2. Environment variables
-
-Copy the root template and configure both apps:
+### 2. Environment
 
 ```bash
 cp .env.example server/.env
 ```
 
-**`server/.env`** (required when running the API from `server/`):
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `PORT` | API port | `5000` |
-| `NODE_ENV` | `development` or `production` | `development` |
-| `MONGO_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/aptitude-app` |
-| `JWT_SECRET` | Signing secret (use a long random value in production) | *(change default)* |
-| `CLIENT_ORIGIN` | Allowed CORS origin(s), comma-separated | `http://localhost:5173` |
-
-**`client/.env.local`** (optional; defaults to `http://localhost:5000`):
+Edit `server/.env`:
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_API_URL` | Backend base URL for Axios |
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | Long random secret (32+ chars in production) |
+| `CLIENT_ORIGIN` | `http://localhost:5173` for Vite dev |
+| `SUPER_ADMIN_*` | Optional; defaults to `admin@aptitude.com` / `Admin@123` |
 
-The client sends cookies cross-origin via `axios.defaults.withCredentials = true`, so `CLIENT_ORIGIN` must match the Vite dev URL (default `http://localhost:5173`).
+### 3. Reset database (recommended for first run)
 
-### 3. Install dependencies
+**Warning:** Deletes all application data.
 
 ```bash
-cd server && npm install
-cd ../client && npm install
+cd server
+npm run reset:db
 ```
 
-### 4. Run locally (development)
+### 4. Run locally
 
-Terminal 1 — API (from `server/`):
+Terminal 1 — API:
 
 ```bash
+cd server
 npm start
 ```
 
-Terminal 2 — frontend (from `client/`):
+Terminal 2 — UI:
 
 ```bash
+cd client
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). Vite proxies `/api` to the backend, so you do not need `VITE_API_URL` unless the API runs on another host.
+Open [http://localhost:5173](http://localhost:5173), sign in as **admin@aptitude.com** / **Admin@123**.
 
-### 4b. Run for production (single server)
+### 5. Production (single host)
 
 ```bash
 cd client && npm run build
 cd ../server
-# Ensure server/.env has NODE_ENV=production and JWT_SECRET (32+ chars)
+# NODE_ENV=production in server/.env
 npm run start:prod
 ```
 
-Open [http://localhost:5000](http://localhost:5000). Express serves `client/dist` and the API on the same origin. Health check: `GET /api/health`.
-
-### 5. Create an admin user
-
-New registrations always get `isAdmin: false`. After registering once, promote a user in MongoDB:
-
-```javascript
-db.users.updateOne({ email: "admin@example.com" }, { $set: { isAdmin: true } })
-```
-
-### 6. Production build (client)
-
-```bash
-cd client
-npm run build    # output: client/dist/
-npm run preview  # local preview of production build
-```
-
-Serve `client/dist` with any static host and point `VITE_API_URL` at your deployed API. Set `NODE_ENV=production` on the server so cookies use `secure: true`.
+Open [http://localhost:5000](http://localhost:5000). Health: `GET /api/health`.
 
 ---
 
-## Running tests
+## NPM scripts
 
-From `server/`:
+| Location | Script | Description |
+|----------|--------|-------------|
+| `server/` | `npm start` | API (dev) |
+| `server/` | `npm run start:prod` | API + static client |
+| `server/` | `npm test` | Jest integration tests |
+| `server/` | `npm run reset:db` | Wipe DB + create super admin |
+| `server/` | `npm run seed:admin` | Upsert super admin + sync password |
+| `client/` | `npm run dev` | Vite dev server |
+| `client/` | `npm run build` | Production build → `client/dist` |
 
-```bash
-npm test
-```
+---
 
-Uses Jest + Supertest with an in-memory MongoDB (`tests/setup.js`). Coverage is written to `server/coverage/`.
+## Promoting other admins
+
+1. Sign in as super admin.
+2. Go to **Admin Console → Users**.
+3. Toggle **Admin access** for a registered student.
+
+The super admin account (`admin@aptitude.com`) cannot be demoted.
 
 ---
 
 ## How proctoring works
 
-1. **Start** — `GET /api/tests/:id/start` creates or resumes an `Attempt` with a server-side `expiresAt`.
-2. **Fullscreen** — The test container requests fullscreen when the attempt loads.
-3. **Listeners** (client):
-   - `visibilitychange` → logs `tab_switch` when the document is hidden.
-   - `fullscreenchange` → logs `fullscreen_exit` when fullscreen ends.
-4. **Server log** — Each event is stored in `Violation` via `POST /api/tests/:id/violations`.
-5. **Auto-submit** — On the **3rd** violation, the client submits immediately. The timer also auto-submits when `expiresAt` is reached.
+1. `GET /api/tests/:id/start` creates/resumes an attempt with server `expiresAt`.
+2. Client requests fullscreen.
+3. Tab switch / fullscreen exit → `POST .../violations`.
+4. **3rd violation** → auto-submit.
+5. Timer expiry → auto-submit.
 
 ---
 
-## Scoring & attempt rules
+## Running tests
 
-- Answers are scored on the server by comparing submitted options to each question’s `correctAnswer`.
-- Only question IDs from the active attempt are accepted in the submit body.
-- Submit is rejected after `expiresAt + SUBMIT_GRACE_MS` (30 seconds).
-- Duplicate submits return `409` (unique submission per user/test).
-- Starting a test after submit returns `409`.
-- Active attempts can be **resumed** until expiry if the user refreshes or returns before time runs out.
+```bash
+cd server
+npm test
+```
 
----
-
-## Client ↔ server integration
-
-- `client/src/main.jsx` sets `axios.defaults.baseURL` from `VITE_API_URL` and enables credentials.
-- API modules use relative paths (`/api/...`), so the base URL must be the server origin, not the Vite dev server path alone.
-- Validation errors from the API return `{ message, errors: [{ path, msg, value }] }`; the register page surfaces `errors[0].msg` when present.
+Uses in-memory MongoDB (`tests/setup.js`).
 
 ---
 
-## Screenshots
+## Role-based access summary
 
-*(Replace placeholders with real screenshots after deployment.)*
-
-| Login | Student dashboard |
-|-------|-------------------|
-| ![Login](https://via.placeholder.com/400x250?text=Login) | ![Dashboard](https://via.placeholder.com/400x250?text=Dashboard) |
-
-| Test UI | Admin analytics |
-|---------|-----------------|
-| ![Test](https://via.placeholder.com/400x250?text=Test+UI) | ![Analytics](https://via.placeholder.com/400x250?text=Analytics) |
-
----
-
-## Future improvements
-
-- [ ] Email notifications for results
-- [ ] Bulk question import (CSV/Excel)
-- [ ] Admin UI for user/role management
-- [ ] Webcam-based proctoring
-- [ ] Live “who is taking a test now” monitor
-- [ ] Category leaderboards
-- [ ] Remove or wire up unused admin pages (`AdminDashboard.jsx`, `ManageTests.jsx`)
+| Action | Student | Admin |
+|--------|---------|-------|
+| Register / login | Yes | Yes |
+| Take tests | Yes | Yes (student view via nav) |
+| Admin API | No | Yes |
+| Admin UI routes | Redirect to dashboard | Yes |
+| Promote users | No | Yes |
+| Demote super admin | No | Blocked |
 
 ---
 
 ## License
 
-Distributed under the **ISC License** (see `server/package.json`). No separate `LICENSE` file is included in the repository.
+**ISC License** (see `server/package.json`).
 
 ---
 

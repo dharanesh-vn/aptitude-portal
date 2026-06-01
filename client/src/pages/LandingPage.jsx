@@ -118,6 +118,7 @@ const LandingPage = () => {
                 variant="ghost"
                 color="brand.700"
                 fontWeight="600"
+                _hover={{ bg: 'brand.50' }}
               >
                 Login
               </Button>
@@ -142,6 +143,7 @@ const LandingPage = () => {
               fontSize={{ base: '4xl', md: '6xl' }}
               fontWeight="extrabold"
               lineHeight="tight"
+              color="gray.800"
             >
               Sharpen Your Skills, Prepare for{" "}
               <Text as="span" color="brand.500">Success</Text>

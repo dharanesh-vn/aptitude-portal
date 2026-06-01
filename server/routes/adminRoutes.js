@@ -11,7 +11,11 @@ const {
   deleteTest,
   getAnalytics,
   getViolationsForTest,
+  getTestResults,
   exportTestScoresCsv,
+  getAllUsers,
+  getAllSubmissions,
+  updateUserAdminRole,
 } = require('../controllers/adminController');
 const { protect, admin } = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validateRequest');
@@ -22,10 +26,22 @@ const {
   createTestRules,
   updateTestRules,
   mongoIdParam,
+  updateUserAdminRules,
 } = require('../validators/adminValidators');
 const { param } = require('express-validator');
 
 const violationsTestIdRules = [param('testId').isMongoId().withMessage('Invalid test id')];
+
+router.get('/users', protect, admin, getAllUsers);
+router.get('/submissions', protect, admin, getAllSubmissions);
+router.patch(
+  '/users/:id/admin',
+  protect,
+  admin,
+  ...updateUserAdminRules,
+  validateRequest,
+  updateUserAdminRole
+);
 
 router
   .route('/questions')
@@ -56,6 +72,15 @@ router.get(
   ...violationsTestIdRules,
   validateRequest,
   getViolationsForTest
+);
+
+router.get(
+  '/tests/:id/results',
+  protect,
+  admin,
+  ...mongoIdParam('id'),
+  validateRequest,
+  getTestResults
 );
 
 router.get(

@@ -42,6 +42,11 @@ const updateTestRules = [
 
 const mongoIdParam = (name = 'id') => [param(name).isMongoId().withMessage('Invalid id')];
 
+const updateUserAdminRules = [
+  param('id').isMongoId().withMessage('Invalid user id'),
+  body('isAdmin').isBoolean().withMessage('isAdmin must be true or false'),
+];
+
 module.exports = {
   createQuestionRules,
   updateQuestionRules,
@@ -49,4 +54,5 @@ module.exports = {
   createTestRules,
   updateTestRules,
   mongoIdParam,
+  updateUserAdminRules,
 };

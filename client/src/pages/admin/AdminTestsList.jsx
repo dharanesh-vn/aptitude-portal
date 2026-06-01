@@ -110,12 +110,15 @@ const AdminTestsList = () => {
 
     return (
         <Box>
-            <Flex justify="space-between" align="center" mb={8}>
+            <Flex justify="space-between" align="center" mb={8} flexWrap="wrap" gap={3}>
                 <Heading>Manage Tests</Heading>
-                <Flex>
-                    {/* Link to the brand new AdminQuestionsList page */}
-                    <Button as={Link} to="/admin/questions" mr={4}>Manage Question Bank</Button>
-                    <Button colorScheme="green" onClick={onCreateOpen}>+ Create New Test</Button>
+                <Flex flexWrap="wrap" gap={2}>
+                    <Button as={Link} to="/admin" variant="outline" size="sm">Admin home</Button>
+                    <Button as={Link} to="/admin/questions" variant="outline">Question bank</Button>
+                    <Button as={Link} to="/admin/tests/create" variant="outline" colorScheme="teal">
+                        Create with questions
+                    </Button>
+                    <Button colorScheme="green" onClick={onCreateOpen}>+ Quick create</Button>
                 </Flex>
             </Flex>
             {loading ? <Flex justify="center"><Spinner size="xl" /></Flex> : (

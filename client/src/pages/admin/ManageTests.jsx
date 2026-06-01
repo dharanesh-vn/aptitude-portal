@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'; // <-- THIS IS THE CORRECTED LINE
-import { Box, Heading, VStack, FormControl, FormLabel, Input, Button, Checkbox, Spinner } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Box, Heading, VStack, FormControl, FormLabel, Input, Button, Checkbox, Spinner, Flex } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import adminService from '../../api/adminService';
@@ -59,9 +60,14 @@ const ManageTests = () => {
 
   return (
     <VStack spacing={10} align="stretch">
+      <Flex justify="space-between" align="center" flexWrap="wrap" gap={3}>
+        <Heading as="h2" size="lg">Create test with questions</Heading>
+        <Button as={Link} to="/admin/tests" variant="outline" size="sm">
+          Back to test list
+        </Button>
+      </Flex>
       <Box>
-        <Heading as="h2" size="lg" mb={4}>Create New Test</Heading>
-        <Box as="form" onSubmit={handleSubmit(onSubmit)} p={6} borderWidth={1} borderRadius="lg" boxShadow="sm">
+        <Box as="form" onSubmit={handleSubmit(onSubmit)} p={6} borderWidth={1} borderRadius="lg" boxShadow="sm" bg="ui.card">
           <VStack spacing={6}>
             <FormControl isRequired>
               <FormLabel>Test Title</FormLabel>

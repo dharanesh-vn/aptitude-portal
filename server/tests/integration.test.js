@@ -93,6 +93,46 @@ describe('Admin protection', () => {
   });
 });
 
+describe('Admin user management', () => {
+  it('allows admin to list users and get test results', async () => {
+    await User.create({
+      name: 'Admin',
+      email: 'admin@aptitude.com',
+      password: 'Admin@123',
+      isAdmin: true,
+    });
+
+    const agent = request.agent(app);
+    await agent.post('/api/auth/login').send({
+      email: 'admin@aptitude.com',
+      password: 'Admin@123',
+    });
+
+    const usersRes = await agent.get('/api/admin/users');
+    expect(usersRes.status).toBe(200);
+    expect(Array.isArray(usersRes.body)).toBe(true);
+    expect(usersRes.body.some((u) => u.isAdmin)).toBe(true);
+
+    const q = await Question.create({
+      text: 'Sample',
+      options: ['A', 'B'],
+      correctAnswer: 'A',
+      explanation: 'x',
+      category: 'Demo',
+    });
+    const testDoc = await Test.create({
+      title: 'Demo Test',
+      duration: 10,
+      questions: [q._id],
+    });
+
+    const resultsRes = await agent.get(`/api/admin/tests/${testDoc._id}/results`);
+    expect(resultsRes.status).toBe(200);
+    expect(resultsRes.body.test.title).toBe('Demo Test');
+    expect(resultsRes.body.results).toEqual([]);
+  });
+});
+
 describe('Submission routes', () => {
   it('returns submission history for logged-in user', async () => {
     await User.create({

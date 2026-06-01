@@ -11,7 +11,9 @@ import {
   Flex,
   Card,
   CardBody,
+  Button,
 } from '@chakra-ui/react';
+import { Link } from 'react-router-dom';
 import {
   ResponsiveContainer,
   BarChart,
@@ -66,9 +68,15 @@ const AdminAnalytics = () => {
 
   return (
     <Box>
-      <Heading mb={2}>Analytics</Heading>
+      <Flex justify="space-between" align="center" mb={2} flexWrap="wrap" gap={3}>
+        <Heading>Analytics</Heading>
+        <Button as={Link} to="/admin" variant="ghost" colorScheme="brand" size="sm">
+          Dashboard
+        </Button>
+      </Flex>
       <Text color="gray.600" mb={8}>
-        Institutional overview of participation and performance.
+        Institutional overview of participation and performance. Open a test below for full
+        submission lists.
       </Text>
 
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={10}>
@@ -143,15 +151,31 @@ const AdminAnalytics = () => {
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
           {(data.averageScorePerTest || []).map((row) => (
             <Flex
-              key={row.testTitle}
+              key={row.testId || row.testTitle}
               justify="space-between"
+              align="center"
               p={3}
               borderWidth={1}
               borderRadius="md"
               bg="gray.50"
+              gap={3}
+              flexWrap="wrap"
             >
-              <Text fontWeight="600">{row.testTitle}</Text>
-              <Text>{row.averagePercent.toFixed(1)}% ({row.submissions} attempts)</Text>
+              <Box>
+                <Text fontWeight="600">{row.testTitle}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  {row.averagePercent.toFixed(1)}% avg · {row.submissions} attempts
+                </Text>
+              </Box>
+              <Button
+                as={Link}
+                to={row.testId ? `/admin/results/${row.testId}` : '/admin/results'}
+                size="sm"
+                colorScheme="brand"
+                variant="outline"
+              >
+                View results
+              </Button>
             </Flex>
           ))}
         </SimpleGrid>

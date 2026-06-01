@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, AuthContext } from './context/AuthContext';
 // Components
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 import LoadingSpinner from './components/LoadingSpinner';
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -14,10 +15,16 @@ import Results from './pages/Results';
 import Profile from './pages/Profile';
 import ReviewPage from './pages/ReviewPage';
 // Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminTestsList from './pages/admin/AdminTestsList';
 import AdminTestDetail from './pages/admin/AdminTestDetail';
 import AdminQuestionsList from './pages/admin/AdminQuestionsList';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminTestResults from './pages/admin/AdminTestResults';
+import ManageTests from './pages/admin/ManageTests';
+
+const homePath = (u) => (u?.isAdmin ? '/admin' : '/dashboard');
 
 const AppRoutes = () => {
   const { user, loading } = useContext(AuthContext);
@@ -26,13 +33,10 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* If a user is NOT logged in, the root path '/' shows the landing page. */}
-      {/* If they are logged in, it redirects them to their dashboard. */}
-      <Route path="/" element={!user ? <LandingPage /> : <Navigate to="/dashboard" />} />
+      <Route path="/" element={!user ? <LandingPage /> : <Navigate to={homePath(user)} />} />
 
-      {/* Public auth routes (also redirect if user is already logged in) */}
-      <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
-      <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
+      <Route path="/login" element={!user ? <Login /> : <Navigate to={homePath(user)} />} />
+      <Route path="/register" element={!user ? <Register /> : <Navigate to={homePath(user)} />} />
       
       {/* Protected routes wrapped in the Layout (with the main navbar) */}
       <Route element={user ? <Layout /> : <Navigate to="/login" />}>
@@ -44,11 +48,16 @@ const AppRoutes = () => {
       </Route>
       
       {/* Protected Admin routes also wrapped in the Layout */}
-      <Route path="/admin" element={user?.isAdmin ? <Layout /> : <Navigate to="/dashboard" />}>
-        <Route index element={<AdminTestsList />} />
+      <Route path="/admin" element={user?.isAdmin ? <AdminLayout /> : <Navigate to="/dashboard" />}>
+        <Route index element={<AdminDashboard />} />
         <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="results" element={<AdminTestResults />} />
+        <Route path="results/:testId" element={<AdminTestResults />} />
+        <Route path="tests" element={<AdminTestsList />} />
+        <Route path="tests/create" element={<ManageTests />} />
         <Route path="tests/:testId" element={<AdminTestDetail />} />
         <Route path="questions" element={<AdminQuestionsList />} />
+        <Route path="users" element={<AdminUsers />} />
       </Route>
 
       {/* Fallback for any other route */}

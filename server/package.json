@@ -7,7 +7,9 @@
     "start": "node index.js",
     "start:prod": "cross-env NODE_ENV=production node index.js",
     "test": "jest --coverage --runInBand --forceExit",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "seed:admin": "node scripts/seedSuperAdmin.js",
+    "reset:db": "node scripts/resetDatabase.js"
   },
   "keywords": [],
   "author": "",

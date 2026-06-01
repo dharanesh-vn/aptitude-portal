@@ -5,6 +5,7 @@ const Test = require('../models/Test');
 const Submission = require('../models/Submission');
 const User = require('../models/User');
 const Violation = require('../models/Violation');
+const { isSuperAdminEmail } = require('../config/superAdmin');
 
 const MAX_QUESTIONS_PAGE = 50;
 
@@ -229,6 +230,7 @@ const getAnalytics = async (req, res) => {
         }
       }
       averageScorePerTest.push({
+        testId: tid,
         testTitle: v.title,
         averagePercent: n ? (sumRatio / n) * 100 : 0,
         submissions: v.scores.length,
@@ -309,6 +311,61 @@ const getViolationsForTest = async (req, res) => {
   }
 };
 
+const getTestResults = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid test ID' });
+    }
+
+    const test = await Test.findById(id).select('title duration questions');
+    if (!test) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+
+    const submissions = await Submission.find({ test: id })
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+
+    const rows = submissions.map((s) => {
+      const pct = s.total > 0 ? Math.round((s.score / s.total) * 1000) / 10 : 0;
+      return {
+        submissionId: s._id,
+        studentName: s.user?.name || '',
+        email: s.user?.email || '',
+        score: s.score,
+        total: s.total,
+        percentage: pct,
+        submittedAt: s.createdAt,
+      };
+    });
+
+    const avgPct =
+      rows.length > 0
+        ? rows.reduce((acc, r) => acc + r.percentage, 0) / rows.length
+        : 0;
+
+    res.json({
+      test: {
+        _id: test._id,
+        title: test.title,
+        duration: test.duration,
+        questionCount: test.questions?.length || 0,
+      },
+      summary: {
+        attempts: rows.length,
+        averagePercent: Math.round(avgPct * 10) / 10,
+        highestPercent: rows.length ? Math.max(...rows.map((r) => r.percentage)) : 0,
+        lowestPercent: rows.length ? Math.min(...rows.map((r) => r.percentage)) : 0,
+      },
+      results: rows,
+    });
+  } catch (error) {
+    console.error('getTestResults:', error);
+    res.status(500).json({ message: 'Could not load test results' });
+  }
+};
+
 const exportTestScoresCsv = async (req, res) => {
   try {
     const { id } = req.params;
@@ -352,6 +409,78 @@ const exportTestScoresCsv = async (req, res) => {
   }
 };
 
+// --- User & submission oversight ---
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+      .select('-password')
+      .sort({ createdAt: -1 });
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('getAllUsers:', error);
+    res.status(500).json({ message: 'Could not load users' });
+  }
+};
+
+const getAllSubmissions = async (req, res) => {
+  try {
+    const submissions = await Submission.find()
+      .populate('user', 'name email isAdmin')
+      .populate('test', 'title duration')
+      .sort({ createdAt: -1 });
+    res.status(200).json(submissions);
+  } catch (error) {
+    console.error('getAllSubmissions:', error);
+    res.status(500).json({ message: 'Could not load submissions' });
+  }
+};
+
+const updateUserAdminRole = async (req, res) => {
+  const { isAdmin } = req.body;
+
+  try {
+    if (typeof isAdmin !== 'boolean') {
+      return res.status(400).json({ message: 'isAdmin must be true or false' });
+    }
+
+    const target = await User.findById(req.params.id);
+    if (!target) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (isSuperAdminEmail(target.email) && !isAdmin) {
+      return res.status(403).json({ message: 'The primary super admin cannot be demoted' });
+    }
+
+    if (target._id.equals(req.user._id) && !isAdmin) {
+      const adminCount = await User.countDocuments({ isAdmin: true });
+      if (adminCount <= 1) {
+        return res.status(403).json({ message: 'Cannot remove admin role from the only admin' });
+      }
+    }
+
+    target.isAdmin = isAdmin;
+    await target.save();
+
+    console.info('[AUDIT] User admin role changed', {
+      targetUserId: target._id.toString(),
+      isAdmin,
+      byAdminId: req.user._id.toString(),
+    });
+
+    res.status(200).json({
+      _id: target._id,
+      name: target.name,
+      email: target.email,
+      isAdmin: target.isAdmin,
+      createdAt: target.createdAt,
+    });
+  } catch (error) {
+    console.error('updateUserAdminRole:', error);
+    res.status(500).json({ message: 'Could not update user role' });
+  }
+};
+
 module.exports = {
   createQuestion,
   getAllQuestions,
@@ -363,5 +492,9 @@ module.exports = {
   deleteTest,
   getAnalytics,
   getViolationsForTest,
+  getTestResults,
   exportTestScoresCsv,
+  getAllUsers,
+  getAllSubmissions,
+  updateUserAdminRole,
 };

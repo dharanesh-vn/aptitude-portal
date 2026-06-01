@@ -9,19 +9,45 @@ const Layout = () => {
   return (
     <Box bg="ui.background" minH="100vh">
       <Flex as="nav" bg="brand.500" color="white" p={4} align="center" boxShadow="md">
-        <Heading as={Link} to="/dashboard" size="md" _hover={{ textDecoration: 'none' }}>
+        <Heading
+          as={Link}
+          to={user?.isAdmin ? '/admin' : '/dashboard'}
+          size="md"
+          _hover={{ textDecoration: 'none' }}
+        >
             CIT Aptitude Portal
         </Heading>
         <Spacer />
-        <Button as={Link} to="/profile" variant="ghost" mr={4} _hover={{ bg: 'brand.600' }}>
+        <Button
+          as={Link}
+          to="/profile"
+          variant="ghost"
+          color="white"
+          mr={4}
+          _hover={{ bg: 'whiteAlpha.200' }}
+        >
             My Profile
         </Button>
         {user?.isAdmin && (
           <>
-            <Button as={Link} to="/admin/analytics" variant="ghost" mr={2} _hover={{ bg: 'brand.600' }}>
+            <Button
+              as={Link}
+              to="/admin/analytics"
+              variant="ghost"
+              color="white"
+              mr={2}
+              _hover={{ bg: 'whiteAlpha.200' }}
+            >
               Analytics
             </Button>
-            <Button as={Link} to="/admin" variant="ghost" mr={4} _hover={{ bg: 'brand.600' }}>
+            <Button
+              as={Link}
+              to="/admin"
+              variant="ghost"
+              color="white"
+              mr={4}
+              _hover={{ bg: 'whiteAlpha.200' }}
+            >
               Admin Panel
             </Button>
           </>

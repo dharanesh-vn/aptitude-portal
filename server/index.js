@@ -17,10 +17,16 @@ const adminRoutes = require('./routes/adminRoutes');
 const testRoutes = require('./routes/testRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 
+const ensureSuperAdmin = require('./scripts/ensureSuperAdmin');
+
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected Successfully...');
+    const syncPassword =
+      process.env.SUPER_ADMIN_SYNC_PASSWORD === 'true' ||
+      process.env.NODE_ENV !== 'production';
+    await ensureSuperAdmin({ syncPassword });
   } catch (err) {
     console.error('MongoDB Connection Failed:', err.message);
     process.exit(1);
