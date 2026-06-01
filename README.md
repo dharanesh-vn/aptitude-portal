@@ -279,7 +279,6 @@ Open [http://localhost:5173](http://localhost:5173), sign in as **admin@aptitude
 ```bash
 cd client && npm run build
 cd ../server
-# NODE_ENV=production in server/.env
 npm run start:prod
 ```
 
@@ -290,7 +289,6 @@ Open [http://localhost:5000](http://localhost:5000). Health: `GET /api/health`.
 ## NPM scripts
 =======
 ##  How Proctoring Works
->>>>>>> 9817d1e6f885ea08fed6ba2578c373114c6e40f0
 
 | Location | Script | Description |
 |----------|--------|-------------|
@@ -324,7 +322,6 @@ The super admin account (`admin@aptitude.com`) cannot be demoted.
 
 ---
 
-<<<<<<< HEAD
 ## Running tests
 
 ```bash
@@ -347,15 +344,6 @@ Uses in-memory MongoDB (`tests/setup.js`).
 | Promote users | No | Yes |
 | Demote super admin | No | Blocked |
 
----
-
-## License
-
-**ISC License** (see `server/package.json`).
-
----
-
-*Built for CIT students.*
 =======
+
 *Built with ❤️ for CIT students.*
->>>>>>> 9817d1e6f885ea08fed6ba2578c373114c6e40f0
