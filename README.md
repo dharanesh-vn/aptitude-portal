@@ -5,7 +5,6 @@
 [![Express.js](https://img.shields.io/badge/Backend-Express.js-000000?style=flat&logo=express)](https://expressjs.com)
 [![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=flat&logo=react)](https://reactjs.org)
 [![Node.js](https://img.shields.io/badge/Runtime-Node.js-339933?style=flat&logo=node.js)](https://nodejs.org)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
 A full-stack aptitude testing platform for institutional use. **Students** register, take proctored timed tests, and review results. **Administrators** manage the question bank, publish tests, view analytics, inspect test-wise submissions, export CSVs, and promote other users to admin.
 
@@ -274,6 +273,7 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173), sign in as **admin@aptitude.com** / **Admin@123**.
 
+<<<<<<< HEAD
 ### 5. Production (single host)
 
 ```bash
@@ -288,6 +288,9 @@ Open [http://localhost:5000](http://localhost:5000). Health: `GET /api/health`.
 ---
 
 ## NPM scripts
+=======
+##  How Proctoring Works
+>>>>>>> 9817d1e6f885ea08fed6ba2578c373114c6e40f0
 
 | Location | Script | Description |
 |----------|--------|-------------|
@@ -321,6 +324,7 @@ The super admin account (`admin@aptitude.com`) cannot be demoted.
 
 ---
 
+<<<<<<< HEAD
 ## Running tests
 
 ```bash
@@ -352,3 +356,6 @@ Uses in-memory MongoDB (`tests/setup.js`).
 ---
 
 *Built for CIT students.*
+=======
+*Built with ❤️ for CIT students.*
+>>>>>>> 9817d1e6f885ea08fed6ba2578c373114c6e40f0
